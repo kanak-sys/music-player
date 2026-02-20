@@ -1,0 +1,9 @@
+.expo/
+node_modules/
+dist/
+web-build/
+.DS_Store
+Thumbs.db
+.env
+.expo/
+.expo/
