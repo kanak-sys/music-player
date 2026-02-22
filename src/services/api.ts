@@ -8,15 +8,17 @@ const api = axios.create({
   timeout: 10000,
 });
 
-export const searchSongs = async (
-  query: string,
-  page: number = 1,
-  limit: number = 20
-): Promise<SearchResult> => {
-  const response = await api.get('/api/search/songs', {
-    params: { query, page, limit },
-  });
-  return response.data.data;
+export const searchSongs = async (query: string, page = 1, limit = 20, retries = 2): Promise<SearchResult> => {
+  try {
+    const response = await api.get('/api/search/songs', { params: { query, page, limit } });
+    return response.data.data;
+  } catch (err: any) {
+    if (err?.response?.status === 429 && retries > 0) {
+      await new Promise(res => setTimeout(res, 2000)); // wait 2s
+      return searchSongs(query, page, limit, retries - 1);
+    }
+    throw err;
+  }
 };
 
 export const getSongById = async (id: string): Promise<Song> => {
@@ -29,12 +31,22 @@ export const getSongSuggestions = async (id: string): Promise<Song[]> => {
   return response.data.data;
 };
 
+let trendingCache: Song[] | null = null;
+
 export const getTrendingSongs = async (): Promise<Song[]> => {
-  const response = await api.get('/api/search/songs', {
-    params: { query: 'top hits 2024', limit: 20 },
-  });
-  return response.data.data?.results || [];
+  if (trendingCache) return trendingCache;
+  try {
+    const response = await api.get('/api/search/songs', {
+      params: { query: 'top hits 2024', limit: 20 },
+    });
+    trendingCache = response.data.data?.results || [];
+    return trendingCache!;
+  } catch (err: any) {
+    if (err?.response?.status === 429) return trendingCache || [];
+    throw err;
+  }
 };
+
 
 export const getArtistSongs = async (artistId: string): Promise<Song[]> => {
   const response = await api.get(`/api/artists/${artistId}/songs`);

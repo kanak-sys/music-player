@@ -18,7 +18,7 @@ interface Props {
   showDuration?: boolean;
 }
 
-export const SongCard: React.FC<Props> = ({
+export const SongCard: React.FC<Props> = ({ 
   song, isActive, isPlaying, onPress, onAddToQueue, showDuration = true,
 }) => {
   const [downloading, setDownloading] = useState(false);

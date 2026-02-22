@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Song } from '../types';
 import { getBestDownloadUrl } from './api';
 
-const DOWNLOADS_DIR = FileSystem.documentDirectory + 'downloads/';
+const DOWNLOADS_DIR = (FileSystem.documentDirectory ?? '') + 'downloads/';
 const DOWNLOADS_KEY = 'downloaded_songs';
 
 export const ensureDownloadsDir = async () => {

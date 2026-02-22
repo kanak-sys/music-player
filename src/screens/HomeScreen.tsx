@@ -72,7 +72,7 @@ export const HomeScreen: React.FC = () => {
   const handleQueryChange = (text: string) => {
     setQuery(text);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => doSearch(text, 1), 400);
+    searchTimeout.current = setTimeout(() => doSearch(text, 1), 800);
   };
 
   const handleLoadMore = () => {
@@ -84,15 +84,15 @@ export const HomeScreen: React.FC = () => {
     setCurrentSong(song, songs, songs.indexOf(song));
   };
 
-  const renderItem = ({ item }: { item: Song }) => (
-    <SongCard
-      song={item}
-      isActive={currentSong?.id === item.id}
-      isPlaying={currentSong?.id === item.id && isPlaying}
-      onPress={() => handleSongPress(item)}
-      onAddToQueue={() => addToQueue(item)}
-    />
-  );
+  const renderItem = useCallback(({ item }: { item: Song }) => (
+  <SongCard
+    song={item}
+    isActive={currentSong?.id === item.id}
+    isPlaying={currentSong?.id === item.id && isPlaying}
+    onPress={() => handleSongPress(item)}
+    onAddToQueue={() => addToQueue(item)}
+  />
+), [currentSong?.id, isPlaying]);
 
   const renderFooter = () => {
     if (!loadingMore) return <View style={{ height: 140 }} />;
