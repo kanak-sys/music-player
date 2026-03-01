@@ -14,7 +14,7 @@ export const searchSongs = async (query: string, page = 1, limit = 20, retries =
     return response.data.data;
   } catch (err: any) {
     if (err?.response?.status === 429 && retries > 0) {
-      await new Promise(res => setTimeout(res, 2000)); // wait 2s
+      await new Promise(res => setTimeout(res, 2000));
       return searchSongs(query, page, limit, retries - 1);
     }
     throw err;
@@ -47,15 +47,57 @@ export const getTrendingSongs = async (): Promise<Song[]> => {
   }
 };
 
-
 export const getArtistSongs = async (artistId: string): Promise<Song[]> => {
   const response = await api.get(`/api/artists/${artistId}/songs`);
   return response.data.data?.results || [];
 };
 
+// ✅ NEW: Genre/Mood playlists — each returns 20 songs
+export type PlaylistKey =
+  | 'bhojpuri'
+  | 'punjabi'
+  | 'bollywood'
+  | 'romantic'
+  | 'party'
+  | 'sad'
+  | 'devotional'
+  | 'english'
+  | '90s'
+  | 'lofi';
+
+export const PLAYLISTS: Record<PlaylistKey, { label: string; emoji: string; query: string }> = {
+  bhojpuri:   { label: 'Bhojpuri Hits',   emoji: '🎺', query: 'bhojpuri hit songs 2024' },
+  punjabi:    { label: 'Punjabi Beats',   emoji: '🥁', query: 'punjabi hits 2024' },
+  bollywood:  { label: 'Bollywood',       emoji: '🎬', query: 'bollywood top songs 2024' },
+  romantic:   { label: 'Romantic',        emoji: '❤️', query: 'romantic hindi love songs' },
+  party:      { label: 'Party Anthems',   emoji: '🎉', query: 'party dance songs hindi' },
+  sad:        { label: 'Sad Songs',       emoji: '😢', query: 'sad hindi songs heartbreak' },
+  devotional: { label: 'Devotional',      emoji: '🙏', query: 'bhajan aarti devotional hindi' },
+  english:    { label: 'English Hits',    emoji: '🌍', query: 'top english hits 2024' },
+  '90s':      { label: '90s Classics',   emoji: '📼', query: '90s hindi classic songs' },
+  lofi:       { label: 'Lofi Chill',      emoji: '🎧', query: 'lofi hindi chill beats' },
+};
+
+const playlistCache: Partial<Record<PlaylistKey, Song[]>> = {};
+
+export const getPlaylistSongs = async (key: PlaylistKey): Promise<Song[]> => {
+  if (playlistCache[key]) return playlistCache[key]!;
+  try {
+    const { query } = PLAYLISTS[key];
+    const response = await api.get('/api/search/songs', {
+      params: { query, limit: 20 },
+    });
+    const results: Song[] = response.data.data?.results || [];
+    playlistCache[key] = results;
+    return results;
+  } catch (err) {
+    console.error(`Playlist fetch error for ${key}:`, err);
+    return [];
+  }
+};
+
 export const getBestDownloadUrl = (song: Song): string => {
   const urls = song.downloadUrl || [];
-  // Prefer 320kbps, fallback to highest available
   const preferred = ['320kbps', '160kbps', '96kbps', '48kbps', '12kbps'];
   for (const quality of preferred) {
     const found = urls.find((u) => u.quality === quality);

@@ -1,12 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { AppNavigator } from './src/navigation/AppNavigator';
-import { useAudioPlayer } from './src/hooks/useAudioPlayer';
+import { useAudioPlayer, initAudioEngine } from './src/hooks/useAudioPlayer';
 
-// Initialize audio player at app level for background playback
+// ✅ Init at module level
+initAudioEngine();
+
 const AudioInitializer = () => {
   useAudioPlayer();
   return null;
@@ -24,8 +26,4 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+const styles = StyleSheet.create({ container: { flex: 1 } });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState,  useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Song } from '../types';
 import { getDownloadedSongs, deleteSong } from '../services/download';
@@ -21,14 +22,22 @@ export const DownloadsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { currentSong, isPlaying, setCurrentSong } = usePlayerStore();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const data = await getDownloadedSongs();
-    setSongs(data);
-    setLoading(false);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      const load = async () => {
+        setLoading(true);
+        const data = await getDownloadedSongs();
+        if (active) {
+          setSongs(data);
+          setLoading(false);
+        }
+      };
+      load();
+      return () => { active = false; }; // cleanup if screen blurs mid-fetch
+    }, [])
+  );
 
-  useEffect(() => { load(); }, []);
 
   const handleDelete = (song: Song) => {
     Alert.alert(

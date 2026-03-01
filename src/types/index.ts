@@ -75,3 +75,9 @@ export type TabParamList = {
   Queue: undefined;
   Downloads: undefined;
 };
+
+export type DrawerParamList = {
+  Home: undefined;
+  Queue: undefined;
+  Downloads: undefined;
+};
